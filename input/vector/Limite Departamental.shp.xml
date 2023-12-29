@@ -1,2 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<metadata xml:lang="es"><Esri><CreaDate>20180423</CreaDate><CreaTime>12095400</CreaTime><ArcGISFormat>1.0</ArcGISFormat><SyncOnce>TRUE</SyncOnce><DataProperties><lineage><Process ToolSource="c:\program files (x86)\arcgis\desktop10.5\ArcToolbox\Toolboxes\Data Management Tools.tbx\CalculateField" Date="20200916" Time="132003">CalculateField "Limite Departamental" DEPARTMENT "!NOMBRE_DPT! .title()" PYTHON_9.3 #</Process></lineage></DataProperties></Esri></metadata>
