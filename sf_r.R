@@ -216,7 +216,31 @@ amazonas <- read_amazon()
 plot(amazonas$geom)
 
 
-plot(read_health_facilities()$geom)
+# 12: Como ler dados de GPS -----------------------------------------------
+
+library(sf)
+library(ggplot2)
+
+setwd("D:/Daniel/courses/curso_R/modulo24-dados_espaciais_e_mapas/")
+
+
+  # Listar as camadas do arquivo gpx
+st_layers("input/vector/passeio_bike.gpx")
+
+
+  # Leitura da camada "tracks" do arquivo gpx
+tracks <- st_read("input/vector/passeio_bike.gpx", layer = "tracks")
+
+
+  # Plotar o objeto tracks
+plot(tracks$geometry)
+
+ggplot(tracks) +
+  geom_sf(col = 'red')
+
+
+
+
 
 
 
