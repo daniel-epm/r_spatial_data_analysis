@@ -39,7 +39,9 @@ plot(guajira)
 
 
 
-# Sistema de coordenadas na prática ---------------------------------------
+
+# 8: Sistema de coordenadas na prática ------------------------------------
+
 
   # Sistema de coordenadas
     # Formas de representação:
@@ -94,7 +96,9 @@ raster::crs(ndvi)
 
 
 
-# Atribuição de Sistema de Coordenadas ------------------------------------
+
+# 9: Atribuição de Sistema de Coordenadas ---------------------------------
+
 
   # Como atribuir CRS aos dados que não posuim
 
@@ -123,4 +127,97 @@ amazonas
 plot(amazonas)
 
 crs(amazonas) <- "+proj=longlat +ellps=GRS80 +no_defs" # Aviso que não tem datum 
+
+
+
+
+# 10: Transformação de Sistema de Coordenadas -----------------------------
+
+
+library(sf)
+library(raster)
+
+
+setwd("D:/Daniel/courses/curso_R/modulo24-dados_espaciais_e_mapas/")
+
+ndvi <- raster("input/raster/MOD_NDVI_M_2023-11-01_rgb_720x360.FLOAT.TIFF")
+ndvi # crs = +proj=longlat +datum=WGS84 +no_defs --> Coordenadas geodésicas
+
+plot(ndvi)
+
+ndvi[ndvi == 99999.0] <- NA
+
+plot(ndvi)
+
+    # Transformação do CRS para coordenadas planas
+
+# Obter notações de projeções no site proj.org -> Coordinate operations -> 
+# Projections
+
+ndvi.proj <- projectRaster(ndvi, crs = '+proj=ortho +long_0=10')
+
+plot(ndvi.proj)                
+
+
+    # Transformação do CRS em dados vector
+
+countries <- st_read("input/vector/ne_110m_admin_0_countries_lakes.shp")
+
+
+plot(countries$geometry) # Dados espaciais em coordenadas geodesicas
+
+countries_proj <- st_transform(countries, crs = "+proj=moll")
+
+plot(countries_proj$geometry)
+
+
+  # Plotar os dois mapas juntos, uno acima do outro
+
+plot(ndvi.proj)
+plot(countries_proj, add = TRUE)
+
+
+  # Gerar outra projeção
+
+ortho.proj <- st_transform(countries, crs = "+proj=ortho +lon_0=-85")
+plot(ortho.proj$geometry)
+
+
+ndvi.ortho <- projectRaster(ndvi, crs = '+proj=ortho +lon_0=-85')
+
+plot(ndvi.ortho)
+plot(ortho.proj$geometry, add= TRUE)
+
+
+
+
+# 11: Como acessar dados do IBGE (pacote geobr) ---------------------------
+
+library(geobr)
+library(magrittr)
+
+br <- read_country(year = 2015)
+plot(br)
+
+estados <- read_state(code_state = 'all')
+
+estados %>% 
+  filter(name_region=='Norte')
+
+
+plot(estados$geom)
+
+
+biomas <- read_biomes()
+plot(biomas$geom)
+
+
+amazonas <- read_amazon()
+plot(amazonas$geom)
+
+
+plot(read_health_facilities()$geom)
+
+
+
 
