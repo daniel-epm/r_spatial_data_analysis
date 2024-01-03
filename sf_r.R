@@ -240,7 +240,51 @@ ggplot(tracks) +
 
 
 
+# 13: Como ler dados do google earth --------------------------------------
 
+library(sf)
+library(ggplot2)
+library(magrittr)
+
+setwd("D:/Daniel/courses/curso_R/modulo24-dados_espaciais_e_mapas/")
+
+
+  # Carregar o arquivo kml
+
+tota <- st_read("input/vector/tota.kml")
+plot(tota$geometry)
+
+ggplot(tota) +
+  geom_sf(fill = 'white', alpha = 0.2 ) +
+  theme_minimal()
+
+
+  # Carregar o arquivo kmz
+
+tota2 <- unzip("input/vector/tota.kmz") %>% 
+             st_read()
+
+plot(tota2$geometry)  
+
+ggplot(tota2) +
+  geom_sf(fill = 'dodgerblue1', alpha = 0.2 ) +
+  theme_void()
+
+
+  
+  # Working with google kml sample data
+
+download.file(url = "https://developers.google.com/kml/documentation/KML_Samples.kml",
+              destfile = "input/vector/kml_google_sample.kml")
+
+st_layers("input/vector/kml_google_sample.kml")
+
+google_campus <- st_read("input/vector/kml_google_sample.kml", 
+                         layer = "Google Campus")
+
+
+ggplot(google_campus) +
+  geom_sf()
 
 
 
