@@ -168,3 +168,29 @@ ssta_180 <- rotate(ersst_ssta)
 
 plot(ssta_180)
 
+
+
+
+# 15: Como ler arquivos NetCDF com o pacote raster (2) --------------------
+
+setwd("D:/Daniel/courses/curso_R/modulo24-dados_espaciais_e_mapas/")
+
+library(raster)
+library(ncmeta)
+
+
+era.nc <- "input/raster/era.nc"
+
+nc_vars(era.nc)
+nc_dims(era.nc)
+
+era_brick <- raster::brick(era.nc)
+
+class(era_brick)   # RasterBrick: a multi-layer raster object.
+
+
+
+
+
+
+
