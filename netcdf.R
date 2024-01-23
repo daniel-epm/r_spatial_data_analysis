@@ -282,6 +282,42 @@ ggplot() +
 
 
 
+# 17: Como recortar dados espaciais de arquivos NetCDF lidos com tidync ----
+
+
+  # Reutilising data from the previous lecture:
+
+dados_nc <- "input/raster/era.nc"
+
+
+dados_nc <- tidync::tidync(dados_nc) %>% 
+              tidync::hyper_tibble() %>% 
+              janitor::clean_names() %>% 
+              dplyr::filter(time == 0)
+
+
+    # Method 1: Defining scale limits according to the area of interest
+
+colombia <- rnaturalearth::ne_countries(country = "Colombia", 
+                                        returnclass = 'sf')
+
+ggplot() +
+  geom_raster(data = dados_nc, aes(x = lon, y = lat, fill = x2t), 
+              interpolate = TRUE) +
+  geom_sf(data = colombia, fill = NA, color = 'black', lwd= 0.85) +
+  labs(x = NULL, y = NULL) +
+  scale_x_continuous(limits = c(-80, -66)) +
+  scale_y_continuous(limits = c(-5, 13)) +
+  scale_fill_gradientn(colours = fields::tim.colors(n = 100))
+
+
+
+    # Method 2: Defining coordinates of area of interest and intersecting 
+    #            coordinates from the data
+
+
+
+
 
 
 
