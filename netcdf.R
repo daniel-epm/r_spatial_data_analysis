@@ -182,11 +182,102 @@ library(ncmeta)
 era.nc <- "input/raster/era.nc"
 
 nc_vars(era.nc)
-nc_dims(era.nc)
+nc_dims(era.nc)  # 3 dims: lat, lon, time
 
 era_brick <- raster::brick(era.nc)
 
 class(era_brick)   # RasterBrick: a multi-layer raster object.
+
+plot(era_brick)   # One plot for every matrix representing each date
+
+
+  ## Plot the first matrix data
+plot(era_brick[[1]])
+plot(era_brick, y= 1)
+
+
+  ## Filtrar dados para a região sul de Brasil
+
+library(geobr)
+library(dplyr)
+
+sul <- read_region() %>%
+        filter(name_region == "Sul")
+
+class(sul)   # sf
+
+plot(sul$geom)
+
+
+  ## Crop raster file to the south region
+
+era_brick_sul <- era_brick %>% 
+                     raster::crop(sul) %>% 
+                     raster::mask(sul)
+  
+
+plot(era_brick_sul, y= 1)
+plot(sul$geom, add = TRUE)
+
+
+  ## Convert RasterBrick to Dataframe
+
+era_brick_df <- as.data.frame(era_brick_sul, xy = TRUE) %>% 
+                                      # xy: create 2 columns for lat and lon
+                  na.omit()   # Delete NA values
+
+
+  ## Pivot longer the dataframe and type conversion to date column
+
+library(tidyr)
+
+era_df <- era_brick_df %>% 
+  tidyr::pivot_longer(cols = starts_with(match = "X", ignore.case = FALSE), 
+                      names_to = 'data',
+                      values_to = 'temp') %>% 
+  mutate(data = substring(text = data, first = 2),
+         data = lubridate::ymd(data))
+
+
+head(era_df)
+
+
+
+
+# 16: Como ler arquivos NetCDF com o pacote tidync ------------------------
+
+setwd("D:/Daniel/courses/curso_R/modulo24-dados_espaciais_e_mapas/")
+
+library(tidync)
+library(dplyr)
+library(ggplot2)
+
+nc_file <- "input/raster/era.nc"
+
+
+dados_nc <- tidync::tidync(nc_file)
+  # Connect to a NetCDF source and allo use of hyper_*() verbs (functions) from
+  # an activated grid.
+
+class(dados_nc)  # "tidync": This class hinders data manipulation. e.g. transform
+
+dados_nc <- dados_nc %>% 
+  tidync::hyper_tibble() %>%  # Extract the raw array data as an expanded data frame
+  janitor::clean_names() %>% 
+  filter(time == 0)
+
+    # * x2t variable: air temperature at 2 meters
+
+s_america <- rnaturalearth::ne_countries(continent = "South America", 
+                                         returnclass = 'sf')
+
+ggplot() +
+  geom_tile(data = dados_nc, aes(x = lon, y = lat, fill = x2t - 273.15)) +
+  geom_sf(data = s_america, fill = NA, color = 'black', lwd = 0.8) +
+  labs(x = NULL, y = NULL, fill = "[°C]", 
+       title = "Air temperature at 2 meters") +
+  coord_sf(expand = FALSE) +
+  scale_fill_gradientn(colours = fields::tim.colors(n = 100))
 
 
 
