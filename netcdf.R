@@ -316,6 +316,66 @@ ggplot() +
     #            coordinates from the data
 
 
+setwd("D:/Daniel/courses/curso_R/modulo24-dados_espaciais_e_mapas/")
+
+library(tidync)
+library(dplyr)
+library(ggplot2)
+
+dados_nc <- "input/raster/era.nc" %>% 
+  tidync()
+
+dados_nc <- dados_nc %>% 
+              hyper_tibble() %>% 
+              janitor::clean_names() %>% 
+              filter(time == 0)
+
+head(dados_nc)
+
+
+  # Obter os dados da região de interes
+colombia <- rnaturalearth::ne_countries(country = 'Colombia',returnclass = 'sf')
+
+class(colombia)   # "sf"  "data.frame"
+
+sf::st_crs(colombia)  # Revisar o crs
+
+## Em caso de precisar mudar o crs:
+sf::st_transform(colombia, crs = 4326)
+
+plot(colombia$geometry)
+
+
+  # Georeferenciar o conjunto de dados e fazer o mascaramento para a região de interes
+
+dados_col <- sf::st_as_sf(dados_nc, coords = c('lon','lat'), crs= 4326, 
+                          remove = F) %>% # remove: não remover colunas lat e lon 
+                 sf::st_intersection(colombia)
+
+class(dados_col)
+
+
+plot(dados_col$geometry, pch = 12, col = 'springgreen4')
+
+
+  # Plotar os dados mascarados
+
+ggplot() +
+  geom_raster(data = dados_col, aes(x= lon, y = lat, fill= x2t - 273.15),
+              interpolate = T) +
+  geom_sf(data = colombia, fill = NA, lwd= 0.75, color = 'black') +
+  coord_sf(expand = F) +
+  scale_fill_gradientn(colours = fields::tim.colors(n = 100)) +
+  labs(fill = "[°C]", x = NULL, y= NULL, 
+       title= "Average air temperature at 2 meters", subtitle = "Colombia 2021") +
+  theme(plot.title.position = "panel")
+
+
+
+
+
+
+
 
 
 
