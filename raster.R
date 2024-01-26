@@ -36,11 +36,15 @@ for (i in seq_along(tifs)) {
 }
 
 
+  # In order to merge raster files, theu must have the same origin:
+  ## In the following for loop we make sure of the same origin for every file
+
 for (i in raster_list) {
   print(raster::origin(i))
 }
 
 
+    # Plotting each raster file
 plot(r1)
 plot(r2)
 plot(r3)
@@ -49,18 +53,19 @@ plot(r5)
 plot(r6)
 
 
-
+  # Merging the raster files
 sergipe <- raster::merge(r1,r2, r3, r4, r5, r6)  # Pode-se usar a função raster::mosaic() também
 
+  # Plotting the resultant merged file
 plot(sergipe)
 
 
+  # Plotting with ggplot and adding a mask for the sergipe state
 brasil <- geobr::read_state(code_state = 'all')
 
 brasil[brasil$name_state == 'Sergipe', ]
 
 st_sergipe <- geobr::read_state(code_state = 28)
-
 
 
 ggplot() +
