@@ -76,9 +76,111 @@ ggplot() +
 
 
 
+abc <- c('a','b','c')
+
+
+nums <- 1:3
+
+tidyr::expand_grid(abc, nums)
 
 
 
 
+# 19: Operações com raster (juntar todos os dados) ------------------------
 
+library(raster)
+library(fields)
+
+setwd("D:/Daniel/courses/curso_R/modulo24-dados_espaciais_e_mapas/")
+
+
+tifs_sergipe <- list.files(path = "input/raster/srtm_sergipe/" , 
+                           pattern = "*.tif", recursive = T, full.names = T)
+
+rasters_sergipe <- lapply(tifs_sergipe, raster)
+  # lapply: applies a function to each element of a list X, returning a list
+  # with same length as initial X
+
+
+  # Join the raster files using merge function
+merged_rasters <- do.call(what = merge, args = rasters_sergipe)
+
+plot(merged_rasters)
+
+
+  # Join the raster files using mosaic function
+
+    # Specify the fun and tolerance arguments required in the mosaic function
+rasters_sergipe$fun <- mean  # Function to use on the overlayed points
+rasters_sergipe$fun(c(1,2,3,4,5)) # Using the incorporated mean function
+
+      # Tolerance is required whenever there's difference in the origin values
+      # from the raster files. We can check those values as follows:
+
+for (i in rasters_sergipe) {
+  print(origin(i))
+}
+      # Here the values are the same, but in case they are different we set the 
+      # tolerance argument in the mosaic function. Here we include it in the list
+      # to be passed to the mosaic function through the do.call function.
+rasters_sergipe$tolerance <- 0.2
+
+
+rasters_mosaic <- do.call(what = mosaic, args = rasters_sergipe)
+
+plot(rasters_mosaic, col = tim.colors(n = 50))
+
+
+
+# 20: Operações com raster (recortar e mascarar dados) --------------------
+
+library(raster)
+library(geobr)
+library(sf)
+library(magrittr)
+
+setwd("D:/Daniel/courses/curso_R/modulo24-dados_espaciais_e_mapas/")
+
+    # Extrair os dados específicos para a extensão territorial de sergipe
+# Using the mosaic previously generated: rasters_mosaic
+
+
+
+  # Filtrar dados de Sergipe
+brasil <- geobr::read_state(code_state = "all")
+brasil[brasil$name_state == "Sergipe",]
+
+  # Criar um objeto com a extensão territorial do estado de Sergipe
+sgp <- geobr::read_state(code_state = 28)
+
+plot(sgp$geom)
+
+
+  # Revisar o CRS das capas
+sf::st_crs(sgp)$proj4string  # +proj=longlat +ellps=GRS80
+raster::crs(rasters_mosaic)  # +proj=longlat +datum=WGS84
+
+    # O CRS não é o mesmo nas duas capas, é preciso mudar o CRS de uma delas
+sgp <- sgp %>% 
+  sf::st_transform(crs = "+proj=longlat +datum=WGS84")
+
+st_crs(sgp)$proj4string  # [1] "+proj=longlat +datum=WGS84 +no_defs"
+
+
+  # Após de ter o mesmo CRS é possivel juntar o mapa de relevo com os limites 
+  # territoriais do estado de Sergipe
+plot(rasters_mosaic)
+plot(sgp$geom, add = T)
+
+
+  # Crop
+m1_crop <- raster::crop(rasters_mosaic, sgp)
+plot(m1_crop)
+plot(sgp$geom, add= T)
+
+
+  # Mask
+m2_mask <- raster::mask(rasters_mosaic, sgp) # Argument inverse = T for ext area
+plot(m2_mask)
+plot(sgp$geom, add=T)
 
